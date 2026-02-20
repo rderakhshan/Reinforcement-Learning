@@ -63,7 +63,7 @@ def plot_learning_curve(x, scores, epsilons, filename, lines=None):
     if filename.endswith('.png'):
         filename = filename.replace('.png', '.html')
         
-    fig.write_html(filename, auto_open=False, include_plotlyjs='cdn')
+    fig.write_html(filename, auto_open=True, include_plotlyjs='cdn')
     
     # Inject an auto-refresh meta tag to automatically update the browser window dynamically
     try:
