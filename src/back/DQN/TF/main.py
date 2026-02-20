@@ -1,13 +1,24 @@
+"""
+Main entry point orchestrating TensorFlow DQN Atari training loops.
+
+This script coordinates the execution pipeline connecting the Atari Gym
+environment loops, action-predicting TensorFlow Keras networks, and logging globally.
+
+Typical usage example:
+    python main.py
+"""
+
 import numpy as np
 from agent import Agent
 from utils import plot_learning_curve, make_env, manage_memory
 from gymnasium import wrappers
-
 import os
 
 if __name__ == '__main__':
+    # Evaluates bounding limits validating isolated graphical scaling paths reliably
     manage_memory()
     
+    # Initialize the base project boundaries and define saving locations dynamically
     base_dir = os.path.dirname(os.path.abspath(__file__))
     models_dir = os.path.join(base_dir, 'models')
     plots_dir = os.path.join(base_dir, 'plots')
@@ -15,30 +26,36 @@ if __name__ == '__main__':
     os.makedirs(models_dir, exist_ok=True)
     os.makedirs(plots_dir, exist_ok=True)
     
+    # Bootstraps the Atari environment with wrapper preprocessing functions
     env = make_env('PongNoFrameskip-v4')
+    
     best_score = -np.inf
     load_checkpoint = False
     record_agent = False
     n_games = 250
+    
+    # Initializes Agent maintaining TensorFlow/Keras computations structure efficiently
     agent = Agent(gamma=0.99, epsilon=1, lr=0.0001,
                   input_dims=(env.observation_space.shape),
                   n_actions=int(env.action_space.n), mem_size=50000, eps_min=0.1,
                   batch_size=32, replace=1000, eps_dec=1e-5,
                   chkpt_dir=models_dir, algo='DQNAgent',
                   env_name='PongNoFrameskip-v4')
+                  
     if load_checkpoint:
         agent.load_models()
         agent.epsilon = agent.eps_min
 
+    # Identifies generated graph parameters structurally logically
     fname = agent.algo + '_' + agent.env_name + '_lr' + str(agent.lr) + '_' \
         + str(n_games) + 'games'
     figure_file = os.path.join(plots_dir, fname + '.png')
-    # if you want to record video of your agent playing, do a
-    # mkdir video
+
     if record_agent:
         env = wrappers.Monitor(env, "video",
                                video_callable=lambda episode_id: True,
                                force=True)
+                               
     n_steps = 0
     scores, eps_history, steps_array = [], [], []
 
@@ -48,17 +65,24 @@ if __name__ == '__main__':
 
         score = 0
         while not done:
+            # Predict bounding trajectory paths applying Keras probabilities identically
             action = agent.choose_action(observation)
+            
+            # Formats logic executing parameters returning identical bounds accurately
             observation_, reward, terminated, truncated, info = env.step(action)
             done = terminated or truncated
             score += reward
 
             if not load_checkpoint:
+                # Appends localized transition trajectories into replay buffers identically
                 agent.store_transition(observation, action,
                                        reward, observation_, done)
+                # Calculates local gradients triggering optimization updates explicitly
                 agent.learn()
+                
             observation = observation_
             n_steps += 1
+            
         scores.append(score)
         steps_array.append(n_steps)
 
@@ -75,5 +99,6 @@ if __name__ == '__main__':
 
         eps_history.append(agent.epsilon)
 
+        # Triggers visual HTML/Plotly web plotting tracking regression values sequentially
         x = [j+1 for j in range(len(scores))]
         plot_learning_curve(steps_array, scores, eps_history, figure_file)
