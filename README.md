@@ -1,260 +1,130 @@
-# Human-Level Control through Deep Reinforcement Learning
+# RL LAB: Reinforcement Learning Algorithms
 
-[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-ee4c2c.svg)](https://pytorch.org/)
-[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-FF6F00.svg)](https://www.tensorflow.org/)
-[![Gymnasium](https://img.shields.io/badge/Gymnasium-Supported-orange.svg)](https://gymnasium.farama.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Python Version](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.10.0-ee4c2c.svg)](https://pytorch.org/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.20.0-FF6F00.svg)](https://www.tensorflow.org/)
+[![uv](https://img.shields.io/badge/uv-Package%20Manager-purple.svg)](https://github.com/astral-sh/uv)
 
 ## Project Overview
 
-This repository implements a Deep Q-Network (DQN) agent capable of learning to play classic Atari 2600 games directly from raw pixel inputs without any domain-specific heuristics. By combining reinforcement learning with deep convolutional neural networks, this project accurately reproduces the historic achievements detailed in the seminal DeepMind paper [_"Human-level control through deep reinforcement learning"_ (Mnih et al., 2015)](https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf).
+RL LAB is an educational Reinforcement Learning laboratory designed to explore and implement fundamental concepts and algorithms spanning tabular and deep reinforcement learning.
 
-The agent utilizes custom environment wrappers for optimal frame preprocessing and establishes a stable training loop utilizing experience replay and a periodic target Q-network. The codebase has been thoroughly annotated with **comprehensive Google-style docstrings and inline algorithmic comments**, ensuring it meets the highest industry formatting standards for production readability.
+Rather than focusing solely on deep RL in complex environments, this codebase provides a solid foundation by implementing classical algorithms in custom Grid World environments (`Utils/grid_env.py`) before scaling up to Deep Q-Networks (DQN) and more advanced architectures.
 
-![Atari Agent Gameplay](https://via.placeholder.com/800x400.png?text=Placeholder:+Agent+Gameplay+Demonstration+GIF)
-
----
-
-## Table of Contents
-
-- [Key Features](#key-features)
-- [Architecture Diagram](#architecture-diagram)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Detailed Usage](#detailed-usage)
-- [Project Structure](#project-structure)
-- [Core Components Explanation](#core-components-explanation)
-- [Training Details](#training-details)
-- [Results and Visualizations](#results-and-visualizations)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
-- [Citation](#citation)
-- [Acknowledgments](#acknowledgments)
+This project is fully managed using `uv` for lightning-fast Python dependency management and runs cleanly on Python 3.11+.
 
 ---
 
-## Key Features
+## Implemented Algorithms
 
-- **Robust Frame Preprocessing Pipeline**: Efficiently grayscales incoming RGB pixel data, resizes it to 84×84, and acts strictly on maximum pixel values over adjacent frames to avert Atari flickering.
-- **Contextual Frame Stacking**: Stacks the 4 most recent sequential frames per observation state to inject temporal context (velocity, trajectory) into the network.
-- **Experience Replay Memory**: Efficient buffer retaining up to 1,000,000 past transitions `(state, action, reward, next_state)` to randomly sample batches, breaking data correlations and smoothing learning.
-- **Stable Target Q-Network**: Decouples the evolving action-choice network from the target Q-value generation network, vastly stabilizing divergence by updating parameters periodically.
-- **Paper-Accurate CNN Architecture**: Precisely matches the 3-layer convolutional filter setup from the original Mnih et al. architecture.
-- **ε-Greedy Exploration Annealing**: Smoothly transitions the agent from purely chaotic environmental exploration to refined action exploitation over time.
-- **Industry-Standard Documentation**: Entire codebase conforms strictly to Google Style Docstrings detailing every parameter, return value, and class architecture algorithmically.
+The codebase includes implementations spanning across multiple families of reinforcement learning algorithms located in the `src/back/` directory:
 
----
-
-## Architecture Diagram
-
-```mermaid
-graph TD
-    classDef envBox fill:#1a237e,stroke:#333,stroke-width:2px,color:#fff;
-    classDef varBox fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px,color:#000;
-    classDef agentBox fill:#f5f5f5,stroke:#9e9e9e,stroke-width:2px,stroke-dasharray: 5 5;
-    classDef netMain fill:#ffe0b2,stroke:#f57c00,stroke-width:3px,color:#000;
-    classDef netTarget fill:#c8e6c9,stroke:#388e3c,stroke-width:3px,color:#000;
-
-    Env((Environment)):::envBox
-    State[State]:::varBox
-    Reward[Reward]:::varBox
-    Action[Action]:::varBox
-
-    subgraph The Agent
-        Main[Main Neural Network <br/> 'q_eval']:::netMain
-        Target[Target Neural Network <br/> 'q_next']:::netTarget
-        Buffer[(Replay Buffer Memory)]
-    end
-
-    %% Live Gameplay Loop
-    Env -- Yields --> State
-    Env -- Yields --> Reward
-
-    State == "1. Live Pixels Fed Into" ===> Main
-    Main == "2. Calculates Best" ===> Action
-
-    Action -- "3. Executed In" --> Env
-
-    %% Background Training Loop
-    State -. "Saves Past" .-> Buffer
-    Action -. "Saves Past" .-> Buffer
-    Reward -. "Saves Past" .-> Buffer
-
-    Buffer -. "Feeds Old States" .-> Target
-    Target -. "Trains/Updates" .-> Main
-```
+- **Value Iteration & Policy Iteration**: Dynamic programming methods for solving known MDPs.
+- **Monte Carlo Methods**: Model-free episode-based learning (`MC_Basic`).
+- **Temporal-Difference Learning**: Step-by-step model-free learning (e.g., Q-Learning, SARSA).
+- **Stochastic Approximation**: Foundations for function approximation.
+- **Value Function Approximation**: Scaling classical tabular methods to continuous or large state spaces.
+- **DQN & DDQN**: Deep Q-Networks and Double Deep Q-Networks (PyTorch and TensorFlow implementations).
+- **Policy Gradient & Actor-Critic**: Advanced architectures for continuous control and policy optimization.
 
 ---
 
 ## Installation
 
-Begin by cloning the repository to your local machine and configuring the Python environment.
+This project utilizes `uv` as its primary package manager.
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/dqn-atari.git
-cd dqn-atari
+git clone https://github.com/rderakhshan/Reinforcement-Learning-Q-Learning-Family-.git
+cd "RL LAB"
 
-# Create a virtual environment (Recommended)
-python -m venv .venv
+# Install uv if you haven't already (https://docs.astral.sh/uv/)
+# Under the project root, let uv automatically create the virtual environment and sync dependencies:
+uv sync
 
 # Activate the virtual environment
-# On Linux / macOS:
-source .venv/bin/activate
 # On Windows:
 .venv\Scripts\activate
-
-# Install all required dependencies
-pip install -r requirements.txt
+# On Linux / macOS:
+source .venv/bin/activate
 ```
 
 ### Core Dependencies
 
-- `Python 3.8+`
-- `PyTorch` / `TensorFlow` (Computational backends for tracking gradients)
-- `Gymnasium` & `ale-py` (Modern implementation of OpenAI Gym for Atari support)
-- `OpenCV-Python` (High-speed frame manipulation)
-- `NumPy` (Tensor preparation)
-- `Plotly` (Metric logging and online line-plot visualization)
-
----
-
-## Quick Start
-
-Here is a minimal script to initialize the environment, wrap it appropriately, and let the agent act inside Breakout.
-
-```python
-import numpy as np
-from src.back.DQN.PT.dqn_agent import DQNAgent
-from src.back.DQN.PT.utils import make_env
-
-# 1. Initialize wrapped Atari 2600 environment
-env = make_env('BreakoutNoFrameskip-v4')
-
-# 2. Instantiate local PyTorch DQN Agent
-agent = DQNAgent(
-    gamma=0.99,
-    epsilon=1.0,
-    lr=0.0001,
-    input_dims=(env.observation_space.shape),
-    n_actions=env.action_space.n,
-    mem_size=50000,
-    batch_size=32,
-    env_name='BreakoutNoFrameskip-v4'
-)
-
-# 3. Simulate a single episode
-state, _ = env.reset()
-done = False
-
-while not done:
-    action = agent.choose_action(state)
-    next_state, reward, terminated, truncated, _ = env.step(action)
-    done = terminated or truncated
-
-    agent.store_transition(state, action, reward, next_state, done)
-    agent.learn()
-
-    state = next_state
-```
-
----
-
-## Detailed Usage
-
-### Model Training
-
-_(Modify the execution paths according to the framework you intend to utilize: `PT` for PyTorch, `TF` for TensorFlow)._
-
-```bash
-# Utilizing uv as your package runner:
-uv run src/back/DQN/PT/main_dqn.py
-```
-
-### Configuration & Hyperparameters Overview
-
-You can directly configure the following values inside the Agent initialization:
-
-- `game`: The designated Atari environment wrapper target (e.g., `PongNoFrameskip-v4`).
-- `lr`: **0.0001** base learning rate (RMSProp / Adam implementations vary).
-- `gamma`: **0.99** standard future reward discount factor.
-- `epsilon`: Start at **1.0** and incrementally decay down to **0.1** to ensure action convergence.
-- `mem_size`: Replay buffer capacity scaling up to **1,000,000**.
-- `replace`: Copy Main Network parameters to the Target Network every **10,000** steps.
-- `batch_size`: Compute gradients across a mini-batch of **32** sampled transitions.
+- `Python 3.11+`
+- `PyTorch` / `TensorFlow` (For Deep RL algorithms)
+- `Gymnasium` (Environment support)
+- `NumPy`, `Pandas`
+- `Matplotlib`, `Plotly`, `OpenCV-Python` (Visualization & observation manipulation)
+- `tqdm` (Progress bars for long training loops)
 
 ---
 
 ## Project Structure
 
 ```text
-dqn-atari/
+RL LAB/
 ├── src/
 │   └── back/
-│       └── DQN/
-│           ├── PT/                       # PyTorch Implementation Domain
-│           │   ├── deep_q_network.py     # Main & Target CNN Architectures
-│           │   ├── dqn_agent.py          # PyTorch Learning Logic & Memory Interface
-│           │   ├── replay_memory.py      # Numpy-based Experience Buffer
-│           │   ├── main_dqn.py           # Training and Configuration Loop
-│           │   └── utils.py              # Graphical plotting & Environment Wrappers
-│           └── TF/                       # TensorFlow Implementation Domain (Keras)
-│               ├── network.py            # Main & Target CNN Architectures
-│               ├── agent.py              # TensorFlow Learning Logic & Tensor Handling
-│               ├── replay_memory.py      # Numpy-based Experience Buffer
-│               ├── main.py               # Training and Configuration Loop
-│               └── utils.py              # Graphical plotting & Environment Wrappers
-├── README.md                             # Repository Documentation
-└── LICENSE                               # MIT License
+│       ├── Actor Critic/
+│       ├── DDQN/
+│       ├── DQN/
+│       │   ├── PT/                       # PyTorch Implementation Domain
+│       │   └── TF/                       # TensorFlow Implementation Domain
+│       ├── Monte Carlo Methods/          # Episodic Tabular RL
+│       ├── Policy Gradient/
+│       ├── Stochastic_approximation/
+│       ├── Temporal-Difference learning/ # Q-Learning, SARSA
+│       ├── Utils/                        # Core Environment configs (grid_env)
+│       ├── Value Function Approximaton/
+│       └── Value iteration and Policy iteration/
+├── pyproject.toml                        # Project definitions & dependencies
+├── uv.lock                               # Locked dependency resolution
+└── README.md                             # You are here
 ```
 
 ---
 
-## Core Components Explanation
+## Quick Start Examples
 
-### Preprocessing Pipeline
+You can run individual algorithmic scripts using the `uv run` command. For instance, to verify the Monte Carlo Basic properties and policy visualization on the grid environment:
 
-The agent intercepts raw frames straight from the emulator via multiple custom `gym.Wrapper` components chronologically sequence-stacked to compress redundant complexity:
-
-1. **`NoFrameSkip` Environment**: Forces deterministic emulator physics without randomized internal skipping.
-2. **`RepeatActionAndMaxFrame`**: Automatically repeats the agent's given action for 4 consecutive frames, tracking the maximum pixel brightness between the last two observed frames to definitively eradicate native invisible-sprites (flickering behavior) present in the Atari hardware.
-3. **`PreprocessFrame`**: Casts raw RGB output directly to Grayscale (eliminating arbitrary color biases), forcefully squashes the aspect ratio down to 84×84, and mathematically normalizes all pixel intensities to float values between `[0, 1]`.
-4. **`StackFrames`**: Concatenates and cycles the 4 most recently generated 84x84 single-channel arrays laterally into a singular contiguous `(4, 84, 84)` Tensor to communicate motion to the network.
-
-### Convolutional Network Architecture Map
-
-The Neural Network structure intentionally lacks any generalized pooling layers in favor of tightly tracked dense convolutions:
-
-```text
-Input: 4 × 84 × 84 (stacked grayscale frames)
-    ↓
-Conv1: 32 filters (8×8 kernel), stride 4, ReLU Activation → Yields 20×20×32
-    ↓
-Conv2: 64 filters (4×4 kernel), stride 2, ReLU Activation → Yields 9×9×64
-    ↓
-Conv3: 64 filters (3×3 kernel), stride 1, ReLU Activation → Yields 7×7×64
-    ↓
-Flatten
-    ↓
-FC1: Fully Connected 512 units, ReLU Activation
-    ↓
-Output: n_actions units (Estimated individual Q-values mapping state-action potential)
+```bash
+uv run "src\back\Monte Carlo Methods\MC_Basic.py"
 ```
+
+To run the classic Value Iteration dynamic programming approach:
+
+```bash
+uv run "src\back\Value iteration and Policy iteration\value iteration.py"
+```
+
+_Note: The custom `grid_env.py` (under Utils) provides an interactive Matplotlib rendering UI. Once a script's computation completes, a blocking window might open up visually mapping the learned policies and estimated State-Values onto the grid._
+
+---
+
+## Key Features
+
+- **Cross-Framework Support**: Cleanly separates algorithmic logic between standard Tabular math, PyTorch, and TensorFlow paradigms.
+- **Educational Annotations**: The underlying files are deeply documented with English & inline mathematical explanations for study.
+- **Grid World Environment**: Custom UI mapping arrows for deterministic policy tracing.
+- **Seamless Package Management**: Completely standardized under `pyproject.toml` specs for one-command replication via `uv`.
 
 ---
 
 ## Troubleshooting
 
-### Commonly Encountered Issues
+1. **"ModuleNotFoundError: No module named 'grid_env'"**  
+   _Solution_: The scripts are designed to dynamically map their relative paths utilizing `pathlib` and `sys.path.insert`. Execute the scripts utilizing `uv run "src\back\..."` from the root directory of the project, avoiding running them deep within relative subdirectories unless your IDE handles root-level execution paths for you.
 
-1. **"ModuleNotFoundError: No module named 'gymnasium'"**  
-   _Solution_: Ensure you activate your virtual environment, and manually install via `pip install gymnasium ale-py`.
-2. **"gymnasium.error.NamespaceNotFound: Namespace ALE not found"**  
-   _Solution_: Ensure the Atari library is properly registered. Your entry point should include `import ale_py; gym.register_envs(ale_py)`.
-3. **Out of Memory (OOM) Errors** // **CUDA OOM Exhaustion**  
-   _Solution_: The Replay Buffer is heavily computationally expensive. Scale down `mem_size` initialized inside the Agent from `50000` -> `10000`. Scale down `batch_size` tracking from `32` -> `16`.
+2. **TensorFlow oneDNN warnings**
+   _Solution_: This is automatically handled within most entry point scripts via `os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"`.
+
+---
+
+## License & Acknowledgements
+
+This project was built iteratively to serve as an in-depth laboratory for internal experimentation with reinforcement learning concepts spanning the classic Sutton & Barto literature up to modern continuous control spaces.
 
 ---
 
